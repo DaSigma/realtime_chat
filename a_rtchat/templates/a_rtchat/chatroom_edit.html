@@ -6,7 +6,6 @@
 <form method="post">
     {% csrf_token %}
     {{ form }}
-
     <div class="my-4">
     <h2>Members</h2>
     {% for member in chat_group.members.all %}
