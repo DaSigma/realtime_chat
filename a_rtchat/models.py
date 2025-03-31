@@ -22,8 +22,25 @@ class GroupMessage(models.Model):
     file = models.FileField(upload_to='files/', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def filename(self):
+        if self.file:
+            return self.file.url.split('/')[-1]
+        else:
+            return None
+    
     def __str__(self):
-        return f"{self.author.username} : {self.body}"
+        if self.body:
+            return f"{self.author.username} : {self.body}"
+        elif self.file:
+            return f"{self.author.username} : {self.filename}"
     class Meta:
         ordering = ('-created',)
+
+    @property
+    def is_image(self):
+        if self.file:
+            return self.file.url.split('.')[-1] in ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp']
+        else:
+            return False
     

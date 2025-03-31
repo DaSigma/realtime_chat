@@ -4,6 +4,9 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 from django.http import Http404
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.http import HttpResponse
 
 
 @login_required
@@ -123,3 +126,32 @@ def chatroom_delete_view(request, chatroom_name):
         'chat_group': chat_group
     }
     return render(request, 'a_rtchat/chatroom_delete.html', context)
+
+
+@login_required
+def chatroom_leave_view(request, chatroom_name):
+    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+    if request.user == chat_group.admin:
+        raise Http404()
+    if request.method == 'POST':
+        chat_group.members.remove(request.user)
+        messages.success(request, 'You have left the chatroom.')
+        return redirect('home')
+
+def chat_file_upload(request, chatroom_name):
+    chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
+    if request.htmx and request.FILES:
+        file = request.FILES.get('file')
+        message = GroupMessage.objects.create(
+            author=request.user, 
+            group=chat_group, 
+            file=file)
+        channel_layer = get_channel_layer()
+        event = {
+            "type": "message_handler",
+            "message_id": message.id,
+        }
+        async_to_sync(channel_layer.group_send)(
+            chatroom_name, event
+        )
+    return HttpResponse('File uploaded successfully')
