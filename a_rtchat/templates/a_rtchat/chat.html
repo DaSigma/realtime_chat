@@ -78,7 +78,7 @@
     </div>
     <!-- TODO: add leave chat modal and logic -->
     {% if chat_group.members.exists %}
-    <a href="{% url 'chatroom-leave' chat_group.group_name %}">Leave Chat</a>
+    {#  <a href="{% url 'chatroom-leave' chat_group.group_name %}">Leave Chat</a>  #}
     {% endif %}
 </wrapper>
 {% endblock %}
